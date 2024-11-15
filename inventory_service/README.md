@@ -1,3 +1,2 @@
 # RR-Team-48-distributed-logging-system 
-.
 
