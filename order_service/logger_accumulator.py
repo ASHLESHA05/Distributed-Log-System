@@ -4,7 +4,7 @@ import json
 
 class FluentdLogger:
     def __init__(self, tag='order_service', host='localhost', port=24224):
-        # Initialize Fluentd connection
+        
         self.fluentd_logger = fluent.sender.FluentSender(tag, host=host, port=port)
 
     def add_registration(self, reg):
@@ -20,5 +20,5 @@ class FluentdLogger:
         print("Heartbeat sent to Fluentd: ", json.dumps(heartbeat, indent=4))
 
     def close(self):
-        # Close the Fluentd connection to ensure all logs are flushed
+       
         self.fluentd_logger.close()
