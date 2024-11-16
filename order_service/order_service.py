@@ -129,6 +129,4 @@ async def main():
     await asyncio.gather(print_heartbeat(), generate_logs())
 
 asyncio.run(main())
-
-
 logger.close()
