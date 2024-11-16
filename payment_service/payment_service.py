@@ -2,7 +2,7 @@ import random
 import asyncio
 import uuid
 from datetime import datetime, timedelta, timezone
-from logger import Logger1
+from log_accumulator import Logger1
 
 node_id = str(uuid.uuid4())
 logs = None
