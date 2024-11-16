@@ -46,7 +46,6 @@ log_messages = {
     ]
 }
 
-# Initialize Fluentd logger
 logger = FluentdLogger(tag="order_service")
 
 async def registration():
@@ -73,7 +72,7 @@ async def print_heartbeat():
             "timestamp": datetime.now(IST).isoformat()
         }
         logger.add_heartbeat(heartbeat_message)
-        await asyncio.sleep(5)  # Non-blocking sleep
+        await asyncio.sleep(5)  
 
 def getmessage(log_level):
     return random.choice(log_messages[log_level])
@@ -123,13 +122,11 @@ async def generate_logs():
 
         if logs:
             logger.add_log(logs)
-        await asyncio.sleep(random.uniform(0.1, 1.0))  # Non-blocking sleep
+        await asyncio.sleep(random.uniform(0.1, 1.0))  
 
 async def main():
     await registration()
     await asyncio.gather(print_heartbeat(), generate_logs())
 
 asyncio.run(main())
-
-# Close the logger once done to flush logs
 logger.close()

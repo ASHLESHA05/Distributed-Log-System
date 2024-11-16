@@ -8,8 +8,8 @@ class Logger1:
         self.logs = logs
         self.heartbeat = heartbeat
         if reg:
-            event.Event('Registration',reg)
-        if self.logs:  # Use self.logs instead of logs
-            event.Event('Logs',logs)
-        if self.heartbeat:  # Use self.heartbeat instead of heartbeat
-            event.Event('HeartBeat',heartbeat)
+            event.Event('logs',reg)
+        if self.logs: 
+            event.Event('logs',self.logs)
+        if self.heartbeat:  
+            event.Event('heartbeat',self.heartbeat)
