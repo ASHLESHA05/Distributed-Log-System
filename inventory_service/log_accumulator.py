@@ -1,23 +1,22 @@
 from fluent import sender
-import json
 
 class Logger1:
     def __init__(self, reg=None, heartbeat=None, logs=None):
         self.logger = sender.FluentSender(
-            "inventory_service", host="localhost", port=24224
+            "inventory_service", host="localhost", port=9880
         )
 
         if reg:
-            self.send_log("log", json.dumps(reg, indent=4))
-            print("Registration Log: ", json.dumps(reg, indent=4))
+            self.send_log("logs", reg)
+            print("Registration Log: ", reg)
 
         if heartbeat:
-            self.send_log("heartbeat", json.dumps(heartbeat, indent=4))
-            print("Heartbeat Log: ", json.dumps(heartbeat, indent=4))
+            self.send_log("heartbeat", heartbeat)
+            print("Heartbeat Log: ", heartbeat)
 
         if logs:
-            self.send_log("log", json.dumps(logs, indent=4))
-            print("Log: ", json.dumps(logs, indent=4))
+            self.send_log("logs", logs)
+            print("Log: ", logs)
 
     def send_log(self, tag, data):
         try:
