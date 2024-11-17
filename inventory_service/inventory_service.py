@@ -3,6 +3,7 @@ import asyncio
 import uuid
 from datetime import datetime, timedelta, timezone
 from log_accumulator import Logger1
+import json
 
 node_id = str(uuid.uuid4())
 logs = None
@@ -66,7 +67,7 @@ async def print_heartbeat():
         heartbeat_message = {
             "node_id": node_id,
             "message_type": "HEARTBEAT",
-            "status": random.choice(heart_beat_status),
+            "status": heart_beat_status[0],
             "timestamp": datetime.now(IST).isoformat()
         }
         Logger1(heartbeat=heartbeat_message)
@@ -123,5 +124,18 @@ async def generate_logs():
 async def main():
     await registration()
     await asyncio.gather(print_heartbeat(), generate_logs())
-
-asyncio.run(main())
+try:
+    asyncio.run(main())
+except KeyboardInterrupt:
+    IST = timezone(timedelta(hours=5, minutes=30))
+    heartbeat_message = {
+        "node_id": node_id,
+        "message_type": "HEARTBEAT",
+        "status": heart_beat_status[1],
+        "timestamp": datetime.now(IST).isoformat()
+    }
+    Logger1(heartbeat=heartbeat_message)
+    print("\nKeyboardInterrupt detected. Shutting down gracefully...")
+    print(json.dumps(heartbeat_message,indent=4))
+    Logger1().close()
+    

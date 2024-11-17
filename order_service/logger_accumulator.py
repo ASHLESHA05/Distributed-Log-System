@@ -2,7 +2,7 @@ import fluent.sender
 import json
 
 class FluentdLogger:
-    def __init__(self, tag='order_service', host='localhost', port=9880):
+    def __init__(self, tag='fluentd.order_service', host='localhost', port=9880):
         
         self.fluentd_logger = fluent.sender.FluentSender(tag, host=host, port=port)
 

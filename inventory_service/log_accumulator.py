@@ -3,7 +3,7 @@ from fluent import sender
 class Logger1:
     def __init__(self, reg=None, heartbeat=None, logs=None):
         self.logger = sender.FluentSender(
-            "inventory_service", host="localhost", port=9880
+            "fluentd.inventory_service", host="localhost", port=9880
         )
 
         if reg:
