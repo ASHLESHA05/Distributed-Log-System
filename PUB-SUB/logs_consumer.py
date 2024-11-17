@@ -1,14 +1,15 @@
-from confluent_kafka import Consumer
+import asyncio
+from aiokafka import AIOKafkaConsumer
 import json
-import os
 from termcolor import colored
+import os
 
+async def put_to_elasticSearch(msg):
+    # Asynchronous function to put logs to Elasticsearch
+    pass
 
-def put_to_elasticSearch(msg):
-    print("Added to elastic search: ", msg)
-
-def classify_logs(msg):
-    put_to_elasticSearch(msg)
+async def classify_logs(msg):
+    await put_to_elasticSearch(msg)
     
     if msg['message_type'] == 'REGISTRATION':
         message = f"Node ID: {msg['node_id']} , service_name: {msg['service_name']}  REGISTERED SUCCESSFULLY"
@@ -18,50 +19,40 @@ def classify_logs(msg):
         if msg['log_level'] == 'INFO':
             print(f"\033[96mINFO: | node_id: {msg['node_id']} | log_id: {msg['log_id']} | service_name: {msg['service_name']} | message: {msg['message']}\033[0m")
         elif msg['log_level'] == 'WARN':
-            print(f'\033[38;5;214m WARNING!! node_id: {msg["node_id"]} | log_id: {msg['log_id']} | service_name: {msg["service_name"]} | message: {msg["message"]} \033[0m')
+            print(f'\033[38;5;214m WARNING!! node_id: {msg["node_id"]} | log_id: {msg["log_id"]} | service_name: {msg["service_name"]} | message: {msg["message"]} \033[0m')
         else:
-            print(f'\033[91m ERROR!! node_id: {msg["node_id"]} | log_id: {msg['log_id']} | service_name: {msg["service_name"]} | message: {msg["message"]} | ERROR CODE: {msg["error_details"]["error_code"]} \033[0m')
-    elif msg['message_type']=='CLOSE_LOG':
+            print(f'\033[91m ERROR!! node_id: {msg["node_id"]} | log_id: {msg["log_id"]} | service_name: {msg["service_name"]} | message: {msg["message"]} | ERROR CODE: {msg["error_details"]["error_code"]} \033[0m')
+    elif msg['message_type'] == 'CLOSE_LOG':
         terminal_width = os.get_terminal_size().columns
-        
-        # Your message
         message = f": |{msg['service_name']} SHUTDOWN Gracefully!! node_id: {msg['node_id']} | log_id: {msg['log_id']} | {msg['timestamp']}"
         centered_message = message.center(terminal_width)
         print(colored(centered_message, 'blue', attrs=['bold']))
-            
 
-def main():
-    consumer_config = {
-        'bootstrap.servers': 'localhost:9092', 
-        'group.id': 'logs-consumer-group',
-        #'auto.offset.reset': 'earliest'  ,
-        'auto.offset.reset': 'latest'
-    }
-
-    consumer = Consumer(consumer_config)
-
-    consumer.subscribe(['logs'])
-
-    print("Consuming messages from topic 'logs'...")
+async def main():
+    consumer = AIOKafkaConsumer(
+        'logs',
+        bootstrap_servers='localhost:9092',
+        group_id='logs-consumer-group',
+        auto_offset_reset='latest'
+    )
+    await consumer.start()
     try:
-        while True:
-            msg = consumer.poll(1.0)
-
-            if msg is None:
-                continue
-
-            if msg.error():
-                print(f"Consumer error: {msg.error()}")
-                continue
-
-            msg = json.loads(msg.value().decode('utf-8'))
-            classify_logs(msg)
-
+        print("Logs consumer started... Press Ctrl+C to stop.")
+        async for msg in consumer:
+            if msg.value:
+                msg = json.loads(msg.value.decode('utf-8'))
+                await classify_logs(msg)
+            else:
+                print("Received empty message.")
     except KeyboardInterrupt:
-        print("\nShutting down logs consumer...")
-
+        # Catching keyboard interrupt to gracefully stop the consumer
+        print("Stopping logs consumer...")
+    except asyncio.CancelledError:
+        # Handle cancellation explicitly
+        print("Consumer task was canceled.")
     finally:
-        consumer.close()
+        await consumer.stop()
+        print("Logs consumer stopped.")
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

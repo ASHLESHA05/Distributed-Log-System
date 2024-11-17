@@ -47,7 +47,7 @@ log_messages = {
     ]
 }
 
-logger = FluentdLogger(tag="order_service")
+logger = FluentdLogger(tag="fluentd.order_service")
 
 async def registration():
     IST = timezone(timedelta(hours=5, minutes=30))
@@ -61,7 +61,7 @@ async def registration():
 
 async def generate_log():
     IST = timezone(timedelta(hours=5, minutes=30))
-    return random.choice(['INFO', 'WARN', 'ERROR']), str(uuid.uuid4()), datetime.now(IST).isoformat()
+    return rrandom.choices(['INFO', 'WARN', 'ERROR'], weights=[0.75, 0.15, 0.10], k=1)[0], str(uuid.uuid4()), datetime.now(IST).isoformat()
 
 async def print_heartbeat():
     while True:
@@ -141,5 +141,14 @@ except KeyboardInterrupt:
     logger.add_heartbeat(heartbeat_message)
     print("\nKeyboardInterrupt detected. Shutting down gracefully...")
     print(json.dumps(heartbeat_message,indent=4))
-    logger.close()
+    close_log={
+        "log_id": str(uuid.uuid4()),
+        "node_id": node_id,
+        "log_level": "INFO",
+        "message_type": "CLOSE_LOG",
+        "message": 'SERVICE SHUTDOWN GRACEFULLY',
+        "service_name": "Order_Service",
+        "timestamp": datetime.now(timezone(timedelta(hours=5, minutes=30))).isoformat()
+    }
+    logger.close(close_log)
     

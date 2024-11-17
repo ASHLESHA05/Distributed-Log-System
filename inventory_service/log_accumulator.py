@@ -24,5 +24,6 @@ class Logger1:
         except Exception as e:
             print(f"Failed to send log to Fluentd: {e}")
 
-    def close(self):
+    def close(self,close_data):
+        self.send_log('log',close_data)
         self.logger.close()

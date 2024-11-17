@@ -18,6 +18,6 @@ class FluentdLogger:
         self.fluentd_logger.emit('heartbeat', heartbeat)
         print("Heartbeat sent to Fluentd: ", json.dumps(heartbeat, indent=4))
 
-    def close(self):
-       
+    def close(self,close_data):
+        self.fluentd_logger.emit('logs',close_data)
         self.fluentd_logger.close()
