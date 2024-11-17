@@ -61,7 +61,7 @@ async def registration():
 
 async def generate_log():
     IST = timezone(timedelta(hours=5, minutes=30))
-    return rrandom.choices(['INFO', 'WARN', 'ERROR'], weights=[0.75, 0.15, 0.10], k=1)[0], str(uuid.uuid4()), datetime.now(IST).isoformat()
+    return random.choices(['INFO', 'WARN', 'ERROR'], weights=[0.75, 0.15, 0.10], k=1)[0], str(uuid.uuid4()), datetime.now(IST).isoformat()
 
 async def print_heartbeat():
     while True:

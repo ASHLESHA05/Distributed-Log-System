@@ -1,78 +1,65 @@
-from confluent_kafka import Consumer
-from datetime import datetime, timedelta
+from aiokafka import AIOKafkaConsumer
+from datetime import datetime
 import json
+import asyncio
 
-EXPECTED_INTERVAL = 5 
-heart_beat={}
+EXPECTED_INTERVAL = 5
 
-def check_heart_beat(msg):
-    if msg['node_id'] not in heart_beat:
-        heart_beat[msg['node_id']]={'status':msg['status'],'timestamp':msg['timestamp']}
-        print(f'First Incomming from {msg['node_id']}, timestamp: {msg['timestamp']}')
-        return True
-    if msg['status']=='DOWN':
-        print("ALERT!! ",msg['node_id'],'shutDown Gracefully')
-        heart_beat[msg['node_id']]['status']='DOWN'
-        return True
-    if msg['status'] != heart_beat[msg['node_id']]['status']:
-        print('Service with node id:',msg['node_id'],'Restarted')
-        heart_beat[msg['node_id']]['status']='UP'
-        return True
+class Heartbeat:
+    def __init__(self):
+        self.heart_beat = {}
+
+    async def check_heart_beat(self, msg):
+        if msg['node_id'] not in self.heart_beat:
+            self.heart_beat[msg['node_id']] = {'status': msg['status'], 'timestamp': msg['timestamp']}
+            print(f"First Incoming from {msg['node_id']}, timestamp: {msg['timestamp']}")
+            return True
         
-    #Here we check for the delayed time stamp
-    previous_time=datetime.fromisoformat(heart_beat[msg['node_id']]['timestamp'])
-    current_time = datetime.fromisoformat(msg['timestamp'])
-    actual_interval = (current_time - previous_time).total_seconds()
-    actual_interval_rounded = round(actual_interval, 2)
-    if actual_interval_rounded > EXPECTED_INTERVAL:
-        print(f"ALERT: Delay detected! Interval: {actual_interval_rounded} seconds")
-    else:
-        print(f"{msg['node_id']} : UP")
+        if msg['status'] == 'DOWN':
+            print(f"ALERT!! {msg['node_id']} shut down gracefully")
+            self.heart_beat[msg['node_id']]['status'] = 'DOWN'
+            return True
+
+        if msg['status'] != self.heart_beat[msg['node_id']]['status']:
+            print(f"Service with node id: {msg['node_id']} Restarted")
+            self.heart_beat[msg['node_id']]['status'] = 'UP'
+            return True
         
-    heart_beat[msg['node_id']]['timestamp']=msg['timestamp']
-    return False
-    
-    
-        
-    
-def main():
-    # Configuration for the Kafka Consumer
-    consumer_config = {
-        'bootstrap.servers': 'localhost:9092', 
-        'group.id': 'heartbeat-consumer-group',
-        'auto.offset.reset': 'earliest'  
-    }
+        previous_time = datetime.fromisoformat(self.heart_beat[msg['node_id']]['timestamp'])
+        current_time = datetime.fromisoformat(msg['timestamp'])
+        actual_interval = (current_time - previous_time).total_seconds()
+        actual_interval_rounded = round(actual_interval, 2)
 
-    # Create a Consumer instance
-    consumer = Consumer(consumer_config)
+        if actual_interval_rounded > EXPECTED_INTERVAL:
+            print(f"ALERT: Delay detected! Interval: {actual_interval_rounded} seconds")
+        else:
+            print(f"{msg['node_id']} : UP")
+            
+        self.heart_beat[msg['node_id']]['timestamp'] = msg['timestamp']
+        return False
 
-    # Subscribe to the topic
-    consumer.subscribe(['heartbeat'])
+    async def consume_heartbeat(self):
+        consumer = AIOKafkaConsumer(
+            'heartbeat',  # Topic name
+            loop=asyncio.get_event_loop(),
+            bootstrap_servers='localhost:9092',
+            group_id='heartbeat-consumer-group',
+            auto_offset_reset='earliest'
+        )
 
-    print("Consuming messages from topic 'heartbeat'...")
-    try:
-        while True:
-            # Poll for a message
-            msg = consumer.poll(1.0)  # Timeout of 1 second
+        await consumer.start()
 
-            if msg is None:
-                # No message available yet
-                continue
+        print("Consuming messages from topic 'heartbeat'...")
 
-            if msg.error():
-                print(f"Consumer error: {msg.error()}")
-                continue
-            msg=msg.value().decode('utf-8')
-            msg_dict = json.loads(msg)
-            check_heart_beat(dict(msg_dict))
-            # Print the message value
-            #print(f"Received message: {msg}")
-    except KeyboardInterrupt:
-        print("\nShutting down heartbeat consumer...")
+        try:
+            async for msg in consumer:
+                msg_value = msg.value.decode('utf-8')
+                msg_dict = json.loads(msg_value)
+                await self.check_heart_beat(msg_dict)
 
-    finally:
-        # Close the consumer to commit offsets and clean up resources
-        consumer.close()
+        except KeyboardInterrupt:
+            print("\nShutting down heartbeat consumer...")
 
-if __name__ == "__main__":
-    main()
+        finally:
+            await consumer.stop()
+
