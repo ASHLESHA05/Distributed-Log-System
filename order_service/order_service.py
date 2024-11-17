@@ -5,7 +5,10 @@ from datetime import datetime, timedelta, timezone
 from logger_accumulator import FluentdLogger
 import json
 
-node_id = str(uuid.uuid4())
+from generate_id import GETKEY
+id= GETKEY(service='order_service',key_file='order_service')
+node_id= id.generate_key()
+# node_id = str(uuid.uuid4())
 heart_beat_status = ['UP', 'DOWN']
 
 log_messages = {
