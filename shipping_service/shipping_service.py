@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 from log_accumulator import Logger1
 from generate_id import GETKEY
 id= GETKEY(service='shipping_service',key_file='shipping_service')
-node_id= id.generate_key()
+node_id= id.get_uuid()
 # node_id = str(uuid.uuid4())
 logs = None
 heart_beat_status = ['UP', 'DOWN']
