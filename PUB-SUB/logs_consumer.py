@@ -3,17 +3,33 @@ from aiokafka import AIOKafkaConsumer
 import json
 from termcolor import colored
 import os
+from logStr.elasticSearch import ElasticsearchLogStorage
 
 class LogConsumer:
     def __init__(self, topic, bootstrap_servers, group_id, offset_reset='latest'):
+        self.es_storage=ElasticsearchLogStorage()
         self.topic = topic
         self.bootstrap_servers = bootstrap_servers
         self.group_id = group_id
         self.auto_offset_reset = offset_reset
         self.consumer = None
+        self.log_buffer = []
+        self.buffer_size = 10  # Adjust as needed
+        self.buffer_flush_interval = 2  # Seconds
+        
+    async def flush_logs_to_elasticsearch(self):
+        """Flush the buffered logs to Elasticsearch."""
+        if self.log_buffer:
+            try:
+                await self.es_storage.store_logs(self.log_buffer)
+                self.log_buffer.clear()
+            except Exception as e:
+                print(f"Error flushing logs to Elasticsearch: {e}")
+        
 
     async def start_consumer(self):
         """Start the Kafka consumer"""
+        await self.es_storage._create_index_template()
         self.consumer = AIOKafkaConsumer(
             self.topic,
             bootstrap_servers=self.bootstrap_servers,
@@ -31,7 +47,12 @@ class LogConsumer:
         
     async def put_to_elasticSearch(self, msg):
         # Asynchronous function to put logs to Elasticsearch
-        pass
+        if msg['message_type']=='REGISTRATION':
+            msg['status']='UP'
+        self.log_buffer.append(msg)
+        if len(self.log_buffer) >= self.buffer_size:
+            await self.flush_logs_to_elasticsearch()
+        
 
     async def classify_logs(self, msg):
         """Classify and process the logs based on their type and log level"""
@@ -71,8 +92,8 @@ class LogConsumer:
         except asyncio.CancelledError:
             print("Consumer task was canceled.")
         finally:
+            await self.flush_logs_to_elasticsearch()
             await self.stop_consumer()
-
-
+            await self.es_storage.close_connection()
 
 

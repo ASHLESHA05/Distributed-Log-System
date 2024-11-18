@@ -2,11 +2,13 @@ from aiokafka import AIOKafkaConsumer
 from datetime import datetime
 import json
 import asyncio
-
+from logStr.elasticSearch import ElasticsearchLogStorage
 EXPECTED_INTERVAL = 5  # Expected interval between heartbeats in seconds
 
 class Heartbeat:
     def __init__(self):
+        self.es_storage=ElasticsearchLogStorage()
+        
         self.heart_beat = {}  # Dictionary to track heartbeat statuses and timestamps
         self.consumer = None  # Kafka consumer attribute of the class
 
@@ -22,6 +24,7 @@ class Heartbeat:
         )
         await self.consumer.start()  # Start the Kafka consumer
         print("Heartbeat consumer started...")
+        
 
     async def check_heart_beat(self, msg):
         """
@@ -43,6 +46,17 @@ class Heartbeat:
             print(f"ALERT!! {node_id} shut down gracefully")
             self.heart_beat[node_id]['status'] = 'DOWN'
             self.heart_beat[node_id]['timestamp'] = timestamp  # Update timestamp
+            try:
+                logs={
+                    'node_id':node_id,
+                    'message_type': 'REGISTRATION',
+                    'Status': 'DOWN',
+                    'timestamp': timestamp
+                }
+                await self.es_storage._create_index_template()
+                await self.es_storage.store_logs([logs])
+            except Exception as e:
+                print(f"Error flushing logs to Elasticsearch: {e}")
             return True
 
         # Handle service restart or status change
@@ -81,71 +95,4 @@ class Heartbeat:
             # Ensure Kafka consumer is stopped gracefully
             await self.consumer.stop()
             print("Heartbeat consumer stopped.")
-
-
-
-# from aiokafka import AIOKafkaConsumer
-# from datetime import datetime
-# import json
-# import asyncio
-
-# EXPECTED_INTERVAL = 5
-
-# class Heartbeat:
-#     def __init__(self):
-#         self.heart_beat = {}
-
-#     async def check_heart_beat(self, msg):
-#         if msg['node_id'] not in self.heart_beat:
-#             self.heart_beat[msg['node_id']] = {'status': msg['status'], 'timestamp': msg['timestamp']}
-#             print(f"First Incoming from {msg['node_id']}, timestamp: {msg['timestamp']}")
-#             return True
-        
-#         if msg['status'] == 'DOWN':
-#             print(f"ALERT!! {msg['node_id']} shut down gracefully")
-#             self.heart_beat[msg['node_id']]['status'] = 'DOWN'
-#             return True
-
-#         if msg['status'] != self.heart_beat[msg['node_id']]['status']:
-#             print(f"Service with node id: {msg['node_id']} Restarted")
-#             self.heart_beat[msg['node_id']]['status'] = 'UP'
-#             return True
-        
-#         previous_time = datetime.fromisoformat(self.heart_beat[msg['node_id']]['timestamp'])
-#         current_time = datetime.fromisoformat(msg['timestamp'])
-#         actual_interval = (current_time - previous_time).total_seconds()
-#         actual_interval_rounded = round(actual_interval, 2)
-
-#         if actual_interval_rounded > EXPECTED_INTERVAL:
-#             print(f"ALERT: Delay detected! Interval: {actual_interval_rounded} seconds")
-#         else:
-#             print(f"{msg['node_id']} : UP")
-            
-#         self.heart_beat[msg['node_id']]['timestamp'] = msg['timestamp']
-#         return False
-
-#     async def consume_heartbeat(self):
-#         consumer = AIOKafkaConsumer(
-#             'heartbeat',  # Topic name
-#             loop=asyncio.get_event_loop(),
-#             bootstrap_servers='localhost:9092',
-#             group_id='heartbeat-consumer-group',
-#             auto_offset_reset='earliest'
-#         )
-
-#         await consumer.start()
-
-#         print("Consuming messages from topic 'heartbeat'...")
-
-#         try:
-#             async for msg in consumer:
-#                 msg_value = msg.value.decode('utf-8')
-#                 msg_dict = json.loads(msg_value)
-#                 await self.check_heart_beat(msg_dict)
-
-#         except KeyboardInterrupt:
-#             print("\nShutting down heartbeat consumer...")
-
-#         finally:
-#             await consumer.stop()
 

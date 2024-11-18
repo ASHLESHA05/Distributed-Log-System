@@ -5,7 +5,6 @@ from flask_socketio import SocketIO, emit
 from logs_consumer import LogConsumer
 from heartBeat_consumer import Heartbeat
 
-# Flask application
 app = Flask(__name__)
 socketio = SocketIO(app)
 
