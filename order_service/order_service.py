@@ -3,8 +3,12 @@ import asyncio
 import uuid
 from datetime import datetime, timedelta, timezone
 from logger_accumulator import FluentdLogger
+import json
 
-node_id = str(uuid.uuid4())
+from generate_id import GETKEY
+id= GETKEY(service='order_service',key_file='order_service')
+node_id= id.get_uuid()
+# node_id = str(uuid.uuid4())
 heart_beat_status = ['UP', 'DOWN']
 
 log_messages = {
@@ -46,7 +50,7 @@ log_messages = {
     ]
 }
 
-logger = FluentdLogger(tag="order_service")
+logger = FluentdLogger(tag="fluentd.order_service")
 
 async def registration():
     IST = timezone(timedelta(hours=5, minutes=30))
@@ -60,7 +64,7 @@ async def registration():
 
 async def generate_log():
     IST = timezone(timedelta(hours=5, minutes=30))
-    return random.choice(['INFO', 'WARN', 'ERROR']), str(uuid.uuid4()), datetime.now(IST).isoformat()
+    return random.choices(['INFO', 'WARN', 'ERROR'], weights=[0.75, 0.15, 0.10], k=1)[0], str(uuid.uuid4()), datetime.now(IST).isoformat()
 
 async def print_heartbeat():
     while True:
@@ -68,7 +72,7 @@ async def print_heartbeat():
         heartbeat_message = {
             "node_id": node_id,
             "message_type": "HEARTBEAT",
-            "status": random.choice(heart_beat_status),
+            "status": heart_beat_status[0],
             "timestamp": datetime.now(IST).isoformat()
         }
         logger.add_heartbeat(heartbeat_message)
@@ -127,6 +131,27 @@ async def generate_logs():
 async def main():
     await registration()
     await asyncio.gather(print_heartbeat(), generate_logs())
-
-asyncio.run(main())
-logger.close()
+try:
+    asyncio.run(main())
+except KeyboardInterrupt:
+    IST = timezone(timedelta(hours=5, minutes=30))
+    heartbeat_message = {
+        "node_id": node_id,
+        "message_type": "HEARTBEAT",
+        "status": heart_beat_status[1],
+        "timestamp": datetime.now(IST).isoformat()
+    }
+    logger.add_heartbeat(heartbeat_message)
+    print("\nKeyboardInterrupt detected. Shutting down gracefully...")
+    print(json.dumps(heartbeat_message,indent=4))
+    close_log={
+        "log_id": str(uuid.uuid4()),
+        "node_id": node_id,
+        "log_level": "INFO",
+        "message_type": "CLOSE_LOG",
+        "message": 'SERVICE SHUTDOWN GRACEFULLY',
+        "service_name": "Order_Service",
+        "timestamp": datetime.now(timezone(timedelta(hours=5, minutes=30))).isoformat()
+    }
+    logger.close(close_log)
+    

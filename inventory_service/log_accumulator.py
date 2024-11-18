@@ -3,7 +3,7 @@ from fluent import sender
 class Logger1:
     def __init__(self, reg=None, heartbeat=None, logs=None):
         self.logger = sender.FluentSender(
-            "inventory_service", host="localhost", port=9880
+            "fluentd.inventory_service", host="localhost", port=9880
         )
 
         if reg:
@@ -24,5 +24,6 @@ class Logger1:
         except Exception as e:
             print(f"Failed to send log to Fluentd: {e}")
 
-    def close(self):
+    def close(self,close_data):
+        self.send_log('logs',close_data)
         self.logger.close()
