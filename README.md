@@ -223,6 +223,13 @@ Follow the steps below to install and set up Kafka on your system.
    tar -xvf kafka_2.13-3.0.0.tgz
    cd kafka_2.13-3.0.0
 ```
+#### Kafka Configuration:
+in /usr/local/kafka/config/serever.properties
+add:
+```bash
+advertised.listeners=PLAINTEXT://vignesh:9092
+listeners=PLAINTEXT://0.0.0.0:9092
+```
 
 
 ## Elasticsearch Installation
