@@ -233,7 +233,7 @@ Follow the steps below to install and set up Kafka on your system.
 in /usr/local/kafka/config/serever.properties
 add:
 ```bash
-advertised.listeners=PLAINTEXT://vignesh:9092
+advertised.listeners=PLAINTEXT://<hostname>:9092
 listeners=PLAINTEXT://0.0.0.0:9092
 ```
 
