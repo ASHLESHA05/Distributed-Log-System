@@ -1,0 +1,8 @@
+flask==2.2.3
+flask-socketio==5.3.2
+cryptography==39.0.1
+aiokafka==1.6.0
+fluent-logger==0.9.6
+termcolor==2.2.0
+asyncio==3.4.3
+elasticsearch==8.8.1
