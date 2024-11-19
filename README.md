@@ -393,3 +393,13 @@ Apache Kafka is a distributed streaming platform used for building real-time dat
 ---
 
 Feel free to explore the documentation of these tools for a deeper understanding of how they work and how to configure them effectively for your logging system. These resources will help you troubleshoot, extend functionality, and leverage advanced features of each tool as needed.
+
+
+## Contact Me
+
+Feel free to reach out with any questions, suggestions, or collaborations!
+
+- **Email**: [ashleshat5@gmail.com](mailto:ashleshat5@gmail.com.com)
+
+## Thank You!
+Thank you for checking out our project! If you find it helpful, please give it a ⭐️ and share your feedback. 😊
