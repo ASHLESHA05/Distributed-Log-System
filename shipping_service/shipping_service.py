@@ -54,7 +54,7 @@ async def registration():
     data = {
         "node_id": node_id,
         "message_type": "REGISTRATION",
-        "service_name": 'Inventory_Service',
+        "service_name": 'shipping_service',
         "timestamp": datetime.now(IST).isoformat()
     }
     Logger1(reg=data)
@@ -96,7 +96,7 @@ async def generate_logs():
                 "log_level": "INFO",
                 "message_type": "LOG",
                 "message": getmessage(generated_log),
-                "service_name": "Inventory_Service",
+                "service_name": "shipping_service",
                 "timestamp": date
             }
         elif generated_log == 'WARN':
@@ -106,7 +106,7 @@ async def generate_logs():
                 "log_level": "WARN",
                 "message_type": "LOG",
                 "message": getmessage(generated_log),
-                "service_name": "Inventory_Service",
+                "service_name": "shipping_service",
                 "response_time_ms": random.randint(10, 100),
                 "threshold_limit_ms": 100,
                 "timestamp": date
@@ -118,7 +118,7 @@ async def generate_logs():
                 "log_level": "ERROR",
                 "message_type": "LOG",
                 "message": getmessage(generated_log)['error_message'],
-                "service_name": "Inventory_Service",
+                "service_name": "shipping_service",
                 "error_details": {
                     "error_code": getmessage(generated_log)['error_code'],
                     "error_message": getmessage(generated_log)['error_message']
@@ -153,7 +153,7 @@ except KeyboardInterrupt:
         "log_level": "INFO",
         "message_type": "CLOSE_LOG",
         "message": 'SERVICE SHUTDOWN GRACEFULLY',
-        "service_name": "Inventory_Service",
+        "service_name": "shipping_service",
         "timestamp": datetime.now(timezone(timedelta(hours=5, minutes=30))).isoformat()
     }
     
