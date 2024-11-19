@@ -2,6 +2,12 @@
 
 This repository contains a set of microservices for inventory management, order processing, payment, and shipping, along with a Pub-Sub system for communication and monitoring. It also includes an alerting system and Kibana for log visualization.
 
+## Authors
+- [Ashlesha T](https://github.com/ASHLESHA05)
+- [Varun S](https://github.com/varuns2903)
+- [Vignesh](https://github.com/vignesh3613)
+- [ShivaDarshan](https://github.com/shivadarshan-devadiga)
+
 ## Getting Started
 
 Follow these steps to set up and run the project locally.
@@ -23,8 +29,8 @@ Ensure you have the following installed:installation guide is included in README
 1. Clone the repository:
 
    ```bash
-   git clone <repository-url>
-   cd <repository-directory>
+   git clone https://github.com/Cloud-Computing-Big-Data/RR-Team-48-distributed-logging-system.git
+   cd Cloud-Computing-Big-Data/RR-Team-48-distributed-logging-system
    ```
 
 2. Install required Python packages for all services and the Pub-Sub system:
@@ -92,7 +98,7 @@ To install **Fluentd** and set it up for use with Python (using the `fluent-logg
    curl -fsSL https://packages.fluentd.org/fluentd-apt-source.sh | sudo bash
 
    # Install Fluentd
-   sudo apt-get install -y td-agent
+   sudo apt-get install -y fluentd
    ```
 
    **On CentOS/RHEL:**
@@ -122,12 +128,12 @@ To install **Fluentd** and set it up for use with Python (using the `fluent-logg
 
 1. **Fluentd Configuration File:**
 
-   Fluentd’s configuration is typically stored in `/etc/td-agent/td-agent.conf`. You'll need to define input sources, output destinations, and possibly filters for your use case.
+   Fluentd’s configuration is typically stored in `/etc/fluent/fluentd.conf`. You'll need to define input sources, output destinations, and possibly filters for your use case.
 
-   Example `td-agent.conf` for a simple logging setup:
+   Example `fluentd.conf` for a simple logging setup:
 
    ```ini
-   # td-agent.conf
+   # fluentd.conf
 
    # Input Plugin (e.g., listening on a TCP port for logs)
    <source>
@@ -156,7 +162,7 @@ To install **Fluentd** and set it up for use with Python (using the `fluent-logg
    After updating the configuration, restart Fluentd to apply changes.
 
    ```bash
-   sudo service td-agent restart
+   sudo service fluentd restart
    ```
 
 ### Additional Setup (For Fluentd with Python)
@@ -176,7 +182,7 @@ Follow the instructions below to install Fluentd:
 sudo apt-get update
 sudo apt-get install -y sudo gnupg2 curl
 curl -fsSL https://packages.fluentd.org/fluentd-apt-source.sh | sudo bash
-sudo apt-get install -y td-agent
+sudo apt-get install -y fluentd
 ```
 
 #### On macOS:
@@ -316,18 +322,29 @@ In a microservices architecture, effective log management is crucial for operati
 - **Microservices**: Various backend services that produce logs.
 - **Kafka**: For Pub-Sub communication and real-time log streaming.
 - **Elasticsearch**: For indexing and storing logs in a searchable format.
-- **Fluentd**: For log accumulation and routing.
-- **Grafana/Prometheus**: For monitoring and alerting.
-- **Docker**: For containerizing services and running them in isolated environments.
-- **Kubernetes**: For orchestrating the deployment and scaling of microservices.
 
 
 
 ## Architecture Diagram
+![image](https://github.com/user-attachments/assets/010c4221-955c-411c-88e5-efdf86bae1b7)
 
 
+## Running Microservices:
+eg: payment service:
+![image](https://github.com/user-attachments/assets/228d6180-28e4-44ba-bfac-08c3c31bedf0)
 
-## Alerting UI
+
+## PUB model:
+![image](https://github.com/user-attachments/assets/c765e998-b7c9-4a62-82cc-5257c922f864)
+![image](https://github.com/user-attachments/assets/e2ec6898-bec5-4dbe-a8dd-95318295e34e)
+![image](https://github.com/user-attachments/assets/72cbba22-b2fb-4575-b1d1-466cf36274f5)
+
+
+## Alerting UI:
+![image](https://github.com/user-attachments/assets/f1bea336-1b08-41ce-bd57-704d6deb3059)
+
+## Kibana Visualization:
+![image](https://github.com/user-attachments/assets/9be5223a-12a3-4558-9243-936bdb34f2a7)
 
 ## Future Improvements
 
