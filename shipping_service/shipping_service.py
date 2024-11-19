@@ -54,14 +54,14 @@ async def registration():
     data = {
         "node_id": node_id,
         "message_type": "REGISTRATION",
-        "service_name": 'Shipping_Service',
+        "service_name": 'Inventory_Service',
         "timestamp": datetime.now(IST).isoformat()
     }
     Logger1(reg=data)
 
 async def generate_log():
     IST = timezone(timedelta(hours=5, minutes=30))
-    return random.choice(['INFO', 'WARN', 'ERROR']), str(uuid.uuid4()), datetime.now(IST).isoformat()
+    return random.choices(['INFO', 'WARN', 'ERROR'], weights=[0.75, 0.15, 0.10], k=1)[0], str(uuid.uuid4()), datetime.now(IST).isoformat()
 
 async def print_heartbeat():
     while True:
@@ -69,7 +69,7 @@ async def print_heartbeat():
         heartbeat_message = {
             "node_id": node_id,
             "message_type": "HEARTBEAT",
-            "status": random.choice(heart_beat_status),
+            "status": heart_beat_status[0],
             "timestamp": datetime.now(IST).isoformat()
         }
         Logger1(heartbeat=heartbeat_message)
@@ -88,7 +88,7 @@ async def generate_logs():
                 "log_level": "INFO",
                 "message_type": "LOG",
                 "message": getmessage(generated_log),
-                "service_name": "Shipping_Service",
+                "service_name": "Inventory_Service",
                 "timestamp": date
             }
         elif generated_log == 'WARN':
@@ -98,9 +98,9 @@ async def generate_logs():
                 "log_level": "WARN",
                 "message_type": "LOG",
                 "message": getmessage(generated_log),
-                "service_name": "Shipping_Service",
-                "response_time_ms": random.randint(50, 500),
-                "threshold_limit_ms": 400,
+                "service_name": "Inventory_Service",
+                "response_time_ms": random.randint(10, 100),
+                "threshold_limit_ms": 100,
                 "timestamp": date
             }
         elif generated_log == 'ERROR':
@@ -110,7 +110,7 @@ async def generate_logs():
                 "log_level": "ERROR",
                 "message_type": "LOG",
                 "message": getmessage(generated_log)['error_message'],
-                "service_name": "Shipping_Service",
+                "service_name": "Inventory_Service",
                 "error_details": {
                     "error_code": getmessage(generated_log)['error_code'],
                     "error_message": getmessage(generated_log)['error_message']
@@ -126,7 +126,6 @@ async def generate_logs():
 async def main():
     await registration()
     await asyncio.gather(print_heartbeat(), generate_logs())
-
 try:
     asyncio.run(main())
 except KeyboardInterrupt:
@@ -151,3 +150,4 @@ except KeyboardInterrupt:
     }
     
     Logger1().close(close_log)
+    
