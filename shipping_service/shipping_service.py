@@ -1,6 +1,7 @@
 import random
 import asyncio
 import uuid
+import json
 from datetime import datetime, timedelta, timezone
 from log_accumulator import Logger1
 from generate_id import GETKEY
@@ -9,7 +10,6 @@ node_id= id.get_uuid()
 # node_id = str(uuid.uuid4())
 logs = None
 heart_beat_status = ['UP', 'DOWN']
-
 log_messages = {
     "INFO": [
         "ShippingService started successfully",
@@ -127,4 +127,27 @@ async def main():
     await registration()
     await asyncio.gather(print_heartbeat(), generate_logs())
 
-asyncio.run(main())
+try:
+    asyncio.run(main())
+except KeyboardInterrupt:
+    IST = timezone(timedelta(hours=5, minutes=30))
+    heartbeat_message = {
+        "node_id": node_id,
+        "message_type": "HEARTBEAT",
+        "status": heart_beat_status[1],
+        "timestamp": datetime.now(IST).isoformat()
+    }
+    Logger1(heartbeat=heartbeat_message)
+    print("\nKeyboardInterrupt detected. Shutting down gracefully...")
+    print(json.dumps(heartbeat_message,indent=4))
+    close_log={
+        "log_id": str(uuid.uuid4()),
+        "node_id": node_id,
+        "log_level": "INFO",
+        "message_type": "CLOSE_LOG",
+        "message": 'SERVICE SHUTDOWN GRACEFULLY',
+        "service_name": "Inventory_Service",
+        "timestamp": datetime.now(timezone(timedelta(hours=5, minutes=30))).isoformat()
+    }
+    
+    Logger1().close(close_log)
