@@ -69,6 +69,7 @@ async def generate_log():
 async def print_heartbeat():
     randomTimeDelayCount=random.randint(5,10)
     time_count=0
+    count=0
     while True:
         IST = timezone(timedelta(hours=5, minutes=30))
         heartbeat_message = {
@@ -78,7 +79,12 @@ async def print_heartbeat():
             "timestamp": datetime.now(IST).isoformat()
         }
         delay=5
+        if count==10:
+            delay=30
+            count=0
+            time_count=0
         time_count+=1
+        count+=1
         if time_count==randomTimeDelayCount:
             time_count=0
             randomTimeDelayCount=random.randint(5,10)

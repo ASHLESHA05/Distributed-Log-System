@@ -242,6 +242,18 @@
             // When a new node registers, add it to the node status list as 'Active'
             updateNodeStatus(data.node_id, 'UP');
         });
+
+        // Handle 'node_active' event for active nodes
+        socket.on('node_active', function (data) {
+            console.log('Node Active:', data);
+            updateNodeStatus(data.node_id, 'UP');
+        });
+
+        // Handle 'node_failed' event for failed nodes
+        socket.on('node_failed', function (data) {
+            console.log('Node Failed:', data);
+            updateNodeStatus(data.node_id, 'DOWN');
+        });
     </script>
 </body>
 

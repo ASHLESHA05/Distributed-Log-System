@@ -3,15 +3,17 @@ from datetime import datetime
 import json
 import asyncio
 from logStr.elasticSearch import ElasticsearchLogStorage
+from logStr.nodeStatusManager import NodeStatusManager  # Import your NodeStatusManager class
+
 EXPECTED_INTERVAL = 5  # Expected interval between heartbeats in seconds
 
 class Heartbeat:
     def __init__(self):
-        self.es_storage=ElasticsearchLogStorage()
-        
+        self.es_storage = ElasticsearchLogStorage()
         self.heart_beat = {}  # Dictionary to track heartbeat statuses and timestamps
         self.consumer = None  # Kafka consumer attribute of the class
-
+        self.manager = NodeStatusManager()  # Initialize NodeStatusManager
+    
     async def start_consumer(self):
         """Initialize and start the Kafka consumer for heartbeat messages."""
         loop = asyncio.get_event_loop()
@@ -24,8 +26,7 @@ class Heartbeat:
         )
         await self.consumer.start()  # Start the Kafka consumer
         print("Heartbeat consumer started...")
-        
-
+    
     async def check_heart_beat(self, msg):
         """
         Check the incoming heartbeat message and perform actions 
@@ -39,6 +40,7 @@ class Heartbeat:
         if node_id not in self.heart_beat:
             self.heart_beat[node_id] = {'status': status, 'timestamp': timestamp}
             print(f"First Incoming heartbeat from {node_id}, timestamp: {timestamp}")
+            await self.manager.upsert_node_status(node_id, status)  # Store the initial status
             return None
 
         # Handle if node shuts down gracefully
@@ -47,8 +49,8 @@ class Heartbeat:
             self.heart_beat[node_id]['status'] = 'DOWN'
             self.heart_beat[node_id]['timestamp'] = timestamp  # Update timestamp
             try:
-                logs={
-                    'node_id':node_id,
+                logs = {
+                    'node_id': node_id,
                     'message_type': 'REGISTRATION',
                     'Status': 'DOWN',
                     'timestamp': timestamp
@@ -57,14 +59,17 @@ class Heartbeat:
                 await self.es_storage.store_logs([logs])
             except Exception as e:
                 print(f"Error flushing logs to Elasticsearch: {e}")
+            await self.manager.upsert_node_status(node_id, 'inactive')  # Update status in Elasticsearch
+            await self.manager.delete_node_status(node_id)
             return None
 
         # Handle service restart or status change
         if status != self.heart_beat[node_id]['status']:
             print(f"Service with node id: {node_id} Restarted")
             self.heart_beat[node_id]['status'] = 'UP'  # Update status to 'UP'
+            await self.manager.upsert_node_status(node_id, 'active')  # Update status in Elasticsearch
             return None
-
+            
         # Calculate the time interval between the previous and current heartbeat
         previous_time = datetime.fromisoformat(self.heart_beat[node_id]['timestamp'])
         current_time = datetime.fromisoformat(timestamp)
@@ -75,12 +80,14 @@ class Heartbeat:
         if actual_interval_rounded > EXPECTED_INTERVAL:
             print(f"ALERT: Delay detected for {node_id}! Interval: {actual_interval_rounded} seconds")
             self.heart_beat[node_id]['timestamp'] = timestamp
+            await self.manager.upsert_node_status(node_id, 'active')  # Update status in Elasticsearch
             return True
         else:
             print(f"{node_id} : UP")
 
         # Update the heartbeat timestamp for the node
         self.heart_beat[node_id]['timestamp'] = timestamp
+         # Update status as the node is active
         return None
 
     async def consume_heartbeat(self):
@@ -97,4 +104,6 @@ class Heartbeat:
             # Ensure Kafka consumer is stopped gracefully
             await self.consumer.stop()
             print("Heartbeat consumer stopped.")
+
+
 

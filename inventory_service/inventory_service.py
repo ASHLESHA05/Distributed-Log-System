@@ -65,6 +65,7 @@ async def generate_log():
     return random.choices(['INFO', 'WARN', 'ERROR'], weights=[0.75, 0.15, 0.10], k=1)[0], str(uuid.uuid4()), datetime.now(IST).isoformat()
 
 async def print_heartbeat():
+    count=0
     randomTimeDelayCount=random.randint(5,10)
     time_count=0
     while True:
@@ -76,7 +77,12 @@ async def print_heartbeat():
             "timestamp": datetime.now(IST).isoformat()
         }
         delay=5
+        if count==10:
+            delay=30
+            count=0
+            time_count=0
         time_count+=1
+        count+=1
         if time_count==randomTimeDelayCount:
             time_count=0
             randomTimeDelayCount=random.randint(5,10)
