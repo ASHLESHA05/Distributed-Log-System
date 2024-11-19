@@ -1,51 +1,50 @@
 import random
 import asyncio
 import uuid
+import json
 from datetime import datetime, timedelta, timezone
 from log_accumulator import Logger1
-import json
-
 from generate_id import GETKEY
-id= GETKEY(service='payment_service',key_file='payment_service')
+id= GETKEY(service='shipping_service',key_file='shipping_service')
 node_id= id.get_uuid()
 # node_id = str(uuid.uuid4())
 logs = None
 heart_beat_status = ['UP', 'DOWN']
 log_messages = {
     "INFO": [
-        "PaymentService started successfully",
-        "Order processed successfully",
-        "User authenticated",
-        "Database connection established",
-        "Cache hit for user data",
+        "ShippingService started successfully",
+        "Order shipped successfully",
+        "Tracking number generated",
+        "Shipping address verified",
+        "Delivery date updated",
     ],
     "WARN": [
-        "Payment gateway timeout, retrying",
-        "High memory usage detected",
-        "Unexpected response from third-party API",
-        "Slow response time detected",
-        "User attempted unauthorized action",
+        "Delayed shipment warning",
+        "Incomplete shipping address detected",
+        "Carrier response delay",
+        "High shipment volume warning",
+        "Unauthorized access attempt",
     ],
     "ERROR": [
         {
-            "error_code": "ERR001",
-            "error_message": "Payment transaction failed"
+            "error_code": "SHIP001",
+            "error_message": "Failed to generate tracking number"
         },
         {
-            "error_code": "ERR002",
-            "error_message": "Database connection lost"
+            "error_code": "SHIP002",
+            "error_message": "Carrier service unavailable"
         },
         {
-            "error_code": "ERR003",
-            "error_message": "Unable to send email notification"
+            "error_code": "SHIP003",
+            "error_message": "Invalid shipping address"
         },
         {
-            "error_code": "ERR004",
-            "error_message": "Invalid request payload"
+            "error_code": "SHIP004",
+            "error_message": "Shipment lost in transit"
         },
         {
-            "error_code": "ERR005",
-            "error_message": "Server encountered an unexpected error"
+            "error_code": "SHIP005",
+            "error_message": "Unexpected server error in ShippingService"
         }
     ]
 }
@@ -55,14 +54,13 @@ async def registration():
     data = {
         "node_id": node_id,
         "message_type": "REGISTRATION",
-        "service_name": 'Payment_Service',
+        "service_name": 'Inventory_Service',
         "timestamp": datetime.now(IST).isoformat()
     }
     Logger1(reg=data)
 
 async def generate_log():
     IST = timezone(timedelta(hours=5, minutes=30))
-    #added weights for logs
     return random.choices(['INFO', 'WARN', 'ERROR'], weights=[0.75, 0.15, 0.10], k=1)[0], str(uuid.uuid4()), datetime.now(IST).isoformat()
 
 async def print_heartbeat():
@@ -98,7 +96,7 @@ async def generate_logs():
                 "log_level": "INFO",
                 "message_type": "LOG",
                 "message": getmessage(generated_log),
-                "service_name": "Payment_Service",
+                "service_name": "Inventory_Service",
                 "timestamp": date
             }
         elif generated_log == 'WARN':
@@ -108,7 +106,7 @@ async def generate_logs():
                 "log_level": "WARN",
                 "message_type": "LOG",
                 "message": getmessage(generated_log),
-                "service_name": "Payment_Service",
+                "service_name": "Inventory_Service",
                 "response_time_ms": random.randint(10, 100),
                 "threshold_limit_ms": 100,
                 "timestamp": date
@@ -120,7 +118,7 @@ async def generate_logs():
                 "log_level": "ERROR",
                 "message_type": "LOG",
                 "message": getmessage(generated_log)['error_message'],
-                "service_name": "Payment_Service",
+                "service_name": "Inventory_Service",
                 "error_details": {
                     "error_code": getmessage(generated_log)['error_code'],
                     "error_message": getmessage(generated_log)['error_message']
@@ -131,16 +129,12 @@ async def generate_logs():
             logs = None
 
         Logger1(logs=logs)
-        await asyncio.sleep(random.uniform(0.1, 1.0))  # Non-blocking sleep
+        await asyncio.sleep(random.uniform(0.1, 1.0))
 
 async def main():
     await registration()
     await asyncio.gather(print_heartbeat(), generate_logs())
-    print("In main..")
-
-
 try:
-    print("Running paymentService...")
     asyncio.run(main())
 except KeyboardInterrupt:
     IST = timezone(timedelta(hours=5, minutes=30))
@@ -159,7 +153,9 @@ except KeyboardInterrupt:
         "log_level": "INFO",
         "message_type": "CLOSE_LOG",
         "message": 'SERVICE SHUTDOWN GRACEFULLY',
-        "service_name": "Payment_Service",
+        "service_name": "Inventory_Service",
         "timestamp": datetime.now(timezone(timedelta(hours=5, minutes=30))).isoformat()
     }
+    
     Logger1().close(close_log)
+    

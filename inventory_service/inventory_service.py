@@ -3,8 +3,12 @@ import asyncio
 import uuid
 from datetime import datetime, timedelta, timezone
 from log_accumulator import Logger1
+import json
+from generate_id import GETKEY
 
-node_id = str(uuid.uuid4())
+id= GETKEY(service='inventory_service',key_file='inventory_service')
+node_id = id.get_uuid()
+# node_id = str(uuid.uuid4())
 logs = None
 heart_beat_status = ['UP', 'DOWN']
 log_messages = {
@@ -58,19 +62,27 @@ async def registration():
 
 async def generate_log():
     IST = timezone(timedelta(hours=5, minutes=30))
-    return random.choice(['INFO', 'WARN', 'ERROR']), str(uuid.uuid4()), datetime.now(IST).isoformat()
+    return random.choices(['INFO', 'WARN', 'ERROR'], weights=[0.75, 0.15, 0.10], k=1)[0], str(uuid.uuid4()), datetime.now(IST).isoformat()
 
 async def print_heartbeat():
+    randomTimeDelayCount=random.randint(5,10)
+    time_count=0
     while True:
         IST = timezone(timedelta(hours=5, minutes=30))
         heartbeat_message = {
             "node_id": node_id,
             "message_type": "HEARTBEAT",
-            "status": random.choice(heart_beat_status),
+            "status": heart_beat_status[0],
             "timestamp": datetime.now(IST).isoformat()
         }
+        delay=5
+        time_count+=1
+        if time_count==randomTimeDelayCount:
+            time_count=0
+            randomTimeDelayCount=random.randint(5,10)
+            delay=random.randint(6,7)
         Logger1(heartbeat=heartbeat_message)
-        await asyncio.sleep(5)
+        await asyncio.sleep(delay)  # Non-blocking sleep
 
 def getmessage(log_level):
     return random.choice(log_messages[log_level])
@@ -123,5 +135,28 @@ async def generate_logs():
 async def main():
     await registration()
     await asyncio.gather(print_heartbeat(), generate_logs())
-
-asyncio.run(main())
+try:
+    asyncio.run(main())
+except KeyboardInterrupt:
+    IST = timezone(timedelta(hours=5, minutes=30))
+    heartbeat_message = {
+        "node_id": node_id,
+        "message_type": "HEARTBEAT",
+        "status": heart_beat_status[1],
+        "timestamp": datetime.now(IST).isoformat()
+    }
+    Logger1(heartbeat=heartbeat_message)
+    print("\nKeyboardInterrupt detected. Shutting down gracefully...")
+    print(json.dumps(heartbeat_message,indent=4))
+    close_log={
+        "log_id": str(uuid.uuid4()),
+        "node_id": node_id,
+        "log_level": "INFO",
+        "message_type": "CLOSE_LOG",
+        "message": 'SERVICE SHUTDOWN GRACEFULLY',
+        "service_name": "Inventory_Service",
+        "timestamp": datetime.now(timezone(timedelta(hours=5, minutes=30))).isoformat()
+    }
+    
+    Logger1().close(close_log)
+    
