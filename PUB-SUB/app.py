@@ -4,7 +4,7 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 from logs_consumer import LogConsumer
 from heartBeat_consumer import Heartbeat
-
+from datetime import datetime, timedelta, timezone
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -19,6 +19,8 @@ log_consumer = LogConsumer(
 )
 
 heartbeat_consumer = Heartbeat()
+
+nodes = {}
 
 @app.route('/')
 def index():
@@ -45,8 +47,8 @@ async def consume_logs_and_heartbeats():
         async for msg in heartbeat_consumer.consumer:
             msg_value = msg.value.decode('utf-8')
             msg_dict = json.loads(msg_value)
-            await heartbeat_consumer.check_heart_beat(msg_dict)
-            emit_heartbeat_alert(msg_dict)
+            res = await heartbeat_consumer.check_heart_beat(msg_dict)
+            emit_heartbeat_alert(msg_dict, res)
 
     # Run both tasks concurrently
     await asyncio.gather(
@@ -60,20 +62,25 @@ def emit_log_message(msg):
     node_id = msg.get('node_id')
     service_name = msg.get('service_name')
     message = msg.get('message', '')
+    timestamp = msg.get('timestamp',datetime.now(timezone(timedelta(hours=5, minutes=30))).isoformat())
     if log_level == 'REGISTRATION':
-        socketio.emit('node_registration', {'node_id': node_id})        
+        nodes[node_id] = service_name
+        socketio.emit('node_registration', {'node_id': node_id, 'timestamp': timestamp})        
     elif log_level == 'ERROR':
-        socketio.emit('error_alert', {'node_id': node_id, 'message': message})
+        socketio.emit('error_alert', {'node_id': node_id, 'service_name': service_name, 'message': message, 'timestamp': timestamp})
     elif log_level == 'WARN':
-        socketio.emit('warn_message', {'node_id': node_id, 'service_name': service_name, 'message': message})
+        socketio.emit('warn_message', {'node_id': node_id, 'service_name': service_name, 'message': message, 'timestamp': timestamp})
     else:
-        socketio.emit('info_message', {'node_id': node_id, 'service_name': service_name, 'message': message})
+        socketio.emit('info_message', {'node_id': node_id, 'message': message, 'timestamp': timestamp})
 
-def emit_heartbeat_alert(msg):
+def emit_heartbeat_alert(msg, res):
     """Emit node heartbeat status alerts and registration"""
     node_id = msg['node_id']
     status = msg['status']
+    timestamp = msg['timestamp']
 
+    if res:
+        socketio.emit("delay_detected", {'node_id': node_id})
     # Handle node UP or DOWN status
     if status == 'DOWN':
         socketio.emit('node_failure_alert', {'node_id': node_id, 'status': 'DOWN'})
