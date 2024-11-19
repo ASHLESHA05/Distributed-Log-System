@@ -67,6 +67,8 @@ async def generate_log():
     return random.choices(['INFO', 'WARN', 'ERROR'], weights=[0.75, 0.15, 0.10], k=1)[0], str(uuid.uuid4()), datetime.now(IST).isoformat()
 
 async def print_heartbeat():
+    randomTimeDelayCount=random.randint(5,10)
+    time_count=0
     while True:
         IST = timezone(timedelta(hours=5, minutes=30))
         heartbeat_message = {
@@ -75,8 +77,14 @@ async def print_heartbeat():
             "status": heart_beat_status[0],
             "timestamp": datetime.now(IST).isoformat()
         }
+        delay=5
+        time_count+=1
+        if time_count==randomTimeDelayCount:
+            time_count=0
+            randomTimeDelayCount=random.randint(5,10)
+            delay=random.randint(6,7)
         logger.add_heartbeat(heartbeat_message)
-        await asyncio.sleep(5)  
+        await asyncio.sleep(delay)  
 
 def getmessage(log_level):
     return random.choice(log_messages[log_level])
