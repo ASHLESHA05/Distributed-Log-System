@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,7 +32,8 @@
             border-collapse: collapse;
         }
 
-        table th, table td {
+        table th,
+        table td {
             padding: 10px;
             border: 1px solid #ddd;
             text-align: left;
@@ -104,6 +106,7 @@
         }
     </style>
 </head>
+
 <body>
     <h1>Distributed Logging System</h1>
 
@@ -117,6 +120,7 @@
                             <th>Node</th>
                             <th>Service</th>
                             <th>Message</th>
+                            <th>Timestamp</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -132,6 +136,7 @@
                         <tr>
                             <th>Node</th>
                             <th>Message</th>
+                            <th>Timestamp</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -203,18 +208,22 @@
         }
 
         // Handle incoming warning log messages
-        socket.on('warn_message', function(data) {
-            appendLogRow('warn-logs', [data.node_id, data.service_name, data.message], 'warn-message');
+        socket.on('warn_message', function (data) {
+            appendLogRow('warn-logs', [data.node_id, data.service_name, data.message, data.timestamp], 'warn-message');
         });
 
         // Handle incoming error log messages
-        socket.on('error_alert', function(data) {
-            appendLogRow('error-logs', [data.node_id, data.message], 'error-message');
+        socket.on('error_alert', function (data) {
+            appendLogRow('error-logs', [data.node_id, data.message, data.timestamp], 'error-message');
             showAlert('error', data.message);
         });
 
+        socket.on('delay_detected', function (data) {
+            showAlert('error', `Heartbeat delay is detected on Node - ${data.node_id}`)
+        })
+
         // Handle node failure alerts (only for DOWN status)
-        socket.on('node_failure_alert', function(data) {
+        socket.on('node_failure_alert', function (data) {
             if (data.status === 'DOWN') {
                 showAlert('node-failure', `Node ${data.node_id} failed!`);
                 updateNodeStatus(data.node_id, 'DOWN');
@@ -222,17 +231,18 @@
         });
 
         // Handle heartbeat updates to mark nodes as active
-        socket.on('heartbeat', function(data) {
+        socket.on('heartbeat', function (data) {
             if (data.status === 'UP') {
                 updateNodeStatus(data.node_id, 'UP');
             }
         });
 
         // Handle REGISTRATION messages
-        socket.on('node_registration', function(data) {
+        socket.on('node_registration', function (data) {
             // When a new node registers, add it to the node status list as 'Active'
             updateNodeStatus(data.node_id, 'UP');
         });
     </script>
 </body>
+
 </html>

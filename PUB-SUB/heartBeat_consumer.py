@@ -39,7 +39,7 @@ class Heartbeat:
         if node_id not in self.heart_beat:
             self.heart_beat[node_id] = {'status': status, 'timestamp': timestamp}
             print(f"First Incoming heartbeat from {node_id}, timestamp: {timestamp}")
-            return True
+            return None
 
         # Handle if node shuts down gracefully
         if status == 'DOWN':
@@ -57,13 +57,13 @@ class Heartbeat:
                 await self.es_storage.store_logs([logs])
             except Exception as e:
                 print(f"Error flushing logs to Elasticsearch: {e}")
-            return True
+            return None
 
         # Handle service restart or status change
         if status != self.heart_beat[node_id]['status']:
             print(f"Service with node id: {node_id} Restarted")
             self.heart_beat[node_id]['status'] = 'UP'  # Update status to 'UP'
-            return True
+            return None
 
         # Calculate the time interval between the previous and current heartbeat
         previous_time = datetime.fromisoformat(self.heart_beat[node_id]['timestamp'])
@@ -74,12 +74,14 @@ class Heartbeat:
         # Check if the interval exceeds the expected interval
         if actual_interval_rounded > EXPECTED_INTERVAL:
             print(f"ALERT: Delay detected for {node_id}! Interval: {actual_interval_rounded} seconds")
+            self.heart_beat[node_id]['timestamp'] = timestamp
+            return True
         else:
             print(f"{node_id} : UP")
 
         # Update the heartbeat timestamp for the node
         self.heart_beat[node_id]['timestamp'] = timestamp
-        return False
+        return None
 
     async def consume_heartbeat(self):
         """Consume heartbeat messages from the Kafka topic."""
