@@ -1,4 +1,4 @@
-# RR-Team-48-distributed-logging-system 
+# Distributed-logging-system 
 
 This repository contains a set of microservices for inventory management, order processing, payment, and shipping, along with a Pub-Sub system for communication and monitoring. It also includes an alerting system and Kibana for log visualization.
 
