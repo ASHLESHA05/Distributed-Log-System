@@ -2,9 +2,9 @@ import uuid
 import pickle
 from cryptography.fernet import Fernet
 import os
-
+#Each Node will have unique identified . [ Gnerate -> Encypt -> store -> decrypt -> REUSE ]
 class GETKEY:
-    def __init__(self, service='payment_service', key_file='key'):
+    def __init__(self, service='NAME_service', key_file='key'):
         self.pickle_file = f'./{service}/{service}.pkl'
         self.key_file = f'./{service}/{key_file}.key'
         self.key = self.load_or_generate_key()

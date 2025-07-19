@@ -8,7 +8,6 @@ from generate_id import GETKEY
 
 id= GETKEY(service='inventory_service',key_file='inventory_service')
 node_id = id.get_uuid()
-# node_id = str(uuid.uuid4())
 logs = None
 heart_beat_status = ['UP', 'DOWN']
 log_messages = {
