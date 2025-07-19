@@ -15,7 +15,7 @@ manager = NodeStatusManager()  # Initialize NodeStatusManager
 # Initialize consumers
 log_consumer = LogConsumer(
     topic='logs',
-    bootstrap_servers='localhost:9092',  # Kafka server
+    bootstrap_servers='kafka:9092',  # Kafka server
     group_id='logs-consumer-group',
     offset_reset='latest'
 )
