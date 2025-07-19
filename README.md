@@ -1,6 +1,6 @@
 # Distributed-logging-system 
 
-[ Note: This repo project has some ongoing updates by building more robust system using RabbitMq and soem ML based log anomoly  detection!! Stay tunes ]
+[ Note: This repo project has some ongoing updates by building more robust system using RabbitMq and some ML based log anomoly  detection!! Stay tunes ]
 
 This repository contains a set of microservices for inventory management, order processing, payment, and shipping, along with a Pub-Sub system for communication and monitoring. It also includes an alerting system and Kibana for log visualization.
 
