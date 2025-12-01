@@ -1,270 +1,79 @@
-/* Color Palette */
-:root {
-  --bg-primary: #0a0e14;
-  --bg-secondary: #101620;
-  --panel-border: #232a39;
-  --text-light: #e0e6f1;
-  --text-muted: #8c98a9;
-  --primary-color: #007bff; /* Blue for connections/header */
-  --success-color: #00bf7a; /* Green for active/start */
-  --danger-color: #ff4d4d; /* Red for stopped/anomaly */
-}
-
-/* === Global Reset & Typography === */
 body {
-  font-family: 'Inter', sans-serif;
-  background-color: var(--bg-primary);
-  color: var(--text-light);
-  margin: 0;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-header {
-  text-align: center;
-  padding: 30px 20px;
-  background-color: var(--bg-secondary);
-  border-bottom: 2px solid var(--panel-border);
-}
-
-h1 {
-  color: var(--primary-color);
-  font-size: 2.2rem;
-  margin-bottom: 5px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-}
-
-p {
-  color: var(--text-muted);
-  margin: 0;
+    background: #0d0d0d;
+    color: white;
+    font-family: "Inter", sans-serif;
+    margin: 0;
+    padding: 0;
 }
 
 .container {
-  flex-grow: 1;
-  width: 95%;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 20px 0;
+    max-width: 1100px;
+    margin: auto;
+    padding: 25px;
 }
 
-/* === Buttons & Controls === */
+header {
+    text-align: center;
+}
+
+h1 {
+    font-size: 34px;
+    color: #00d1ff;
+}
+
+.subtitle {
+    color: #888;
+    font-size: 14px;
+}
+
+/* BUTTONS */
 .controls {
-  text-align: center;
-  margin: 20px 0 40px;
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
-button {
-  border: none;
-  padding: 12px 25px;
-  margin: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #fff;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  letter-spacing: 0.5px;
+.btn {
+    padding: 12px 22px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s;
+    color: #fff;
 }
 
-.primary-btn {
-  background-color: var(--primary-color);
-}
-.primary-btn:hover {
-  background-color: #0069d9;
+.success { background: #2ecc71; }
+.warn { background: #f1c40f; color: #000; }
+.error { background: #e74c3c; }
+.debug { background: #9b59b6; }
+.failover { background: #3498db; }
+.interrupt { background: #ff0077; }
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0px 0px 10px rgba(0,255,255,0.4);
 }
 
-.success-btn {
-  background-color: var(--success-color);
-}
-.success-btn:hover {
-  background-color: #00a86d;
+/* LOG BOX */
+.log-section h2 { color: #00f7ff; }
+
+.log-box {
+    margin-top: 20px;
+    background: #000;
+    height: 460px;
+    overflow-y: auto;
+    padding: 15px;
+    font-family: monospace;
+    border-radius: 10px;
 }
 
-.danger-btn {
-  background-color: var(--danger-color);
-}
-.danger-btn:hover {
-  background-color: #d83a3a;
-}
-
-/* === Main Dashboard Layout === */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr; /* Simulation takes 2/3, Console 1/3 */
-  gap: 30px;
-  min-height: 60vh;
-}
-
-.panel {
-  background-color: var(--bg-secondary);
-  border-radius: 12px;
-  padding: 20px;
-  border: 1px solid var(--panel-border);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-}
-
-/* === Simulation Panel (Nodes & Connections) === */
-#simulation-panel {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-#circleContainer {
-  position: relative;
-  width: 100%;
-  padding-top: 100%; /* Makes the container square for reliable circular layout */
-}
-
-#connections {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-#nodesContainer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.node {
-  position: absolute;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background-color: #313a4a;
-  color: var(--text-light);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-align: center;
-  padding: 5px;
-  transition: all 0.4s ease-in-out;
-  cursor: pointer;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-  border: 3px solid transparent;
-}
-.node.active {
-  background-color: var(--success-color);
-  border-color: #34d08f;
-  box-shadow: 0 0 20px rgba(0, 191, 122, 0.6), 0 0 30px rgba(0, 191, 122, 0.3);
-  transform: scale(1.05);
-}
-.node.stopped {
-  background-color: #272f3d;
-  border-color: #4f5b6b;
-  color: var(--text-muted);
-}
-
-/* === Animated Connections === */
-line {
-  stroke: var(--primary-color);
-  stroke-width: 3;
-  stroke-dasharray: 8;
-  animation: dash 1.5s linear infinite;
-  opacity: 0.8;
-}
-@keyframes dash {
-  to {
-    stroke-dashoffset: -16;
-  }
-}
-
-/* === Console Section === */
-.console-section {
-  display: flex;
-  flex-direction: column;
-}
-
-.console-section h3 {
-  color: var(--primary-color);
-  margin-top: 0;
-  border-bottom: 1px solid var(--panel-border);
-  padding-bottom: 10px;
-  margin-bottom: 10px;
-  font-size: 1.2rem;
-}
-
-#console {
-  flex-grow: 1;
-  background: var(--bg-primary);
-  border: 1px solid var(--panel-border);
-  border-radius: 8px;
-  padding: 15px;
-  font-family: 'Roboto Mono', monospace;
-  font-size: 0.85rem;
-  line-height: 1.6;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-#console::-webkit-scrollbar {
-  width: 8px;
-}
-#console::-webkit-scrollbar-thumb {
-  background-color: #3c4961;
-  border-radius: 4px;
-}
-
-/* === Anomaly Toast === */
-#anomalyBox {
-  position: fixed;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--danger-color);
-  color: #fff;
-  padding: 15px 30px;
-  border-radius: 10px;
-  border: 3px solid #ff7a7a;
-  display: none;
-  font-weight: 700;
-  font-size: 1.1rem;
-  z-index: 1000;
-  box-shadow: 0 0 20px rgba(255, 77, 77, 0.8);
-  animation: pulse 1s infinite alternate;
-}
-
-@keyframes pulse {
-    from { transform: translateX(-50%) scale(1); opacity: 1; }
-    to { transform: translateX(-50%) scale(1.05); opacity: 0.9; }
-}
-
-/* === Footer === */
-footer {
-  text-align: center;
-  padding: 15px;
-  color: var(--text-muted);
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--panel-border);
-  margin-top: 20px;
-}
-
-/* === Media Queries for Responsiveness === */
-@media (max-width: 1024px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr; /* Stack the simulation and console vertically */
-  }
-  #simulation-panel {
-    min-height: 500px;
-  }
-  #circleContainer {
-    width: 90vw;
-    padding-top: 90vw;
-  }
-  .node {
-    width: 100px;
-    height: 100px;
-  }
-}
+/* LOG TYPES */
+.log-line { padding: 5px; margin: 4px 0; }
+.log-success { color: #2ecc71; }
+.log-warn { color: #f1c40f; }
+.log-error { color: #ff5f5f; }
+.log-debug { color: #9b59b6; }
+.log-rabbit { color: #00d1ff; }

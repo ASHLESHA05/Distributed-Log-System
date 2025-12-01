@@ -1,46 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Distributed System Simulation</title>
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>Distributed Log System — Simulation</title>
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <header>
-    <h1>⚙️ Distributed System Simulation Dashboard</h1>
-    <p>Visualize and control your microservice ecosystem in real time</p>
-  </header>
+    <div class="container">
+        <header>
+            <h1>Distributed Log Simulation Dashboard</h1>
+            <p class="subtitle">Simulate failovers, heartbeats & logs</p>
+        </header>
 
-  <div class="container">
-    <section class="controls">
-      <button id="createNodeBtn" class="primary-btn">➕ Create Node</button>
-      <button id="startBtn" class="success-btn">▶ Start Simulation</button>
-      <button id="stopAllBtn" class="danger-btn">⏹ Stop All</button>
-    </section>
-  
-    <main class="dashboard-grid">
-      <div id="simulation-panel" class="panel">
-        <div id="circleContainer">
-          <svg id="connections"></svg>
-          <div id="nodesContainer"></div>
-        </div>
-      </div>
-  
-      <section class="console-section panel">
-        <h3>🩺 System Messages</h3>
-        <div id="console"></div>
-      </section>
-    </main>
-  </div>
+        <section class="controls">
+            <button class="btn success" onclick="trigger('/api/sim/success')">Success</button>
+            <button class="btn warn" onclick="trigger('/api/sim/warn')">Warn</button>
+            <button class="btn error" onclick="trigger('/api/sim/error')">Error</button>
+            <button class="btn debug" onclick="trigger('/api/sim/debug')">Debug</button>
+            <button class="btn failover" onclick="trigger('/api/sim/failover')">Failover</button>
+            <button class="btn interrupt" onclick="trigger('/heartbeat/interrupt')">Interrupt Heartbeat</button>
+        </section>
 
-  <div id="anomalyBox"></div>
+        <section class="log-section">
+            <h2>Live Logs</h2>
+            <div id="logBox" class="log-box"></div>
+        </section>
+    </div>
 
-  <footer>
-    <p>Built with ❤️ using FastAPI, HTML, CSS & JavaScript</p>
-  </footer>
-
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
